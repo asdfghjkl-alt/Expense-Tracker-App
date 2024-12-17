@@ -3,6 +3,7 @@ import { createContext, useState } from "react";
 export const ExpensesContext = createContext({
   expenses: [],
   addExpense: (expense) => {},
+  setRetrievedExpenses: (expenses) => {},
   removeExpense: (id) => {},
   updateExpense: (updatedExpense) => {},
 });
@@ -11,7 +12,7 @@ export default function ExpensesContextProvider({ children }) {
   const [expenses, setExpenses] = useState([]);
 
   function addExpense(expense) {
-    setExpenses((currentExpenses) => [...currentExpenses, expense]);
+    setExpenses((currentExpenses) => [expense, ...currentExpenses]);
   }
 
   function removeExpense(expenseId) {
@@ -20,7 +21,11 @@ export default function ExpensesContextProvider({ children }) {
     );
   }
 
-  function updateExpense(updatedExpense) {
+  function setRetrievedExpenses(retrievedExpenses) {
+    setExpenses(retrievedExpenses.reverse());
+  }
+
+  function updateExpense(updatedExpense, id) {
     const updatableExpenseIndex = expenses.findIndex(
       (expense) => updatedExpense.id === expense.id
     );
@@ -34,6 +39,7 @@ export default function ExpensesContextProvider({ children }) {
   const value = {
     expenses: expenses,
     addExpense: addExpense,
+    setRetrievedExpenses: setRetrievedExpenses,
     removeExpense: removeExpense,
     updateExpense: updateExpense,
   };

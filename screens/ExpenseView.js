@@ -1,10 +1,11 @@
 import { StyleSheet, View } from "react-native";
-import { useLayoutEffect, useContext, useState } from "react";
+import { useLayoutEffect, useContext, useState, useEffect } from "react";
 
 import { ExpensesContext } from "../store/expenses-context";
 
 import ExpenseList from "../components/ExpenseList/ExpenseList";
 import TotalDisplay from "../components/TotalDisplay";
+import { fetchExpenses } from "../util/http";
 
 export default function ExpenseView({ route, navigation }) {
   const { type } = route.params;
@@ -13,7 +14,24 @@ export default function ExpenseView({ route, navigation }) {
 
   const expenseCtx = useContext(ExpensesContext);
 
-  var displayedExpenses;
+  var displayedExpenses = [];
+
+  useEffect(() => {
+    async function getExpenses() {
+      const expenses = await fetchExpenses();
+      expenseCtx.setRetrievedExpenses(expenses);
+    }
+
+    getExpenses();
+  }, []);
+
+  useEffect(() => {
+    var tempTotal = 0;
+    for (let i = 0; i < displayedExpenses.length; i++) {
+      tempTotal += displayedExpenses[i].price;
+    }
+    setTotal(tempTotal);
+  }, [displayedExpenses]);
 
   if (type === "recent") {
     displayedExpenses = expenseCtx.expenses.filter((item) => {
@@ -27,28 +45,6 @@ export default function ExpenseView({ route, navigation }) {
   } else {
     displayedExpenses = expenseCtx.expenses;
   }
-
-  useLayoutEffect(() => {
-    var tempExpenses;
-    if (type === "recent") {
-      tempExpenses = expenseCtx.expenses.filter((item) => {
-        const today = new Date();
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(today.getDate() - 7);
-
-        const itemDate = new Date(item.date);
-        return itemDate >= sevenDaysAgo && itemDate <= today;
-      });
-    } else {
-      tempExpenses = expenseCtx.expenses;
-    }
-    var tempTotal = 0;
-    for (let i = 0; i < tempExpenses.length; i++) {
-      tempTotal += tempExpenses[i].price;
-    }
-    setTotal(tempTotal);
-  }, [total, expenseCtx]);
-
   return (
     <View style={styles.cont}>
       <TotalDisplay totalCost={total} />

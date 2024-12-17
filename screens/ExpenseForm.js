@@ -7,6 +7,7 @@ import { ExpensesContext } from "../store/expenses-context";
 import { colors } from "../constants/colors";
 
 import Input from "../components/Input";
+import { storeExpenses, updateExpense } from "../util/http";
 
 export default function ExpenseForm({ route }) {
   const navigation = useNavigation();
@@ -23,7 +24,6 @@ export default function ExpenseForm({ route }) {
   }, []);
 
   const [expense, setExpense] = useState({
-    id: defaultValues ? defaultValues.id : uuid.v4(),
     price: {
       value: defaultValues ? defaultValues.price.toString() : "",
       isValid: true,
@@ -47,9 +47,8 @@ export default function ExpenseForm({ route }) {
     });
   }
 
-  function addExpense() {
+  async function addExpense() {
     const expenseData = {
-      id: expense.id,
       price: parseFloat(parseFloat(expense.price.value).toFixed(2)),
       date: new Date(expense.date.value),
       desc: expense.desc.value,
@@ -74,9 +73,11 @@ export default function ExpenseForm({ route }) {
     }
 
     if (defaultValues) {
-      expenseCtx.updateExpense(expenseData);
+      expenseCtx.updateExpense({ ...expenseData, id: defaultValues.id });
+      await updateExpense(defaultValues.id, expenseData);
     } else {
-      expenseCtx.addExpense(expenseData);
+      const id = await storeExpenses(expenseData);
+      expenseCtx.addExpense({ ...expenseData, id: id });
     }
 
     navigation.goBack();

@@ -5,6 +5,8 @@ import { useNavigation } from "@react-navigation/native";
 import { ExpensesContext } from "../../store/expenses-context";
 import { getFormattedDate } from "../../util/date";
 
+import { removeExpense } from "../../util/http";
+
 import ExpenseItem from "./ExpenseItem";
 
 export default function ExpenseList({ displayedExpenses }) {
@@ -14,17 +16,11 @@ export default function ExpenseList({ displayedExpenses }) {
 
   function renderExpense(itemData) {
     function deleteExpense() {
-      // const newExpense = { ...itemData.item };
-      // newExpense.price = 99.9;
-      // expenseCtx.updateExpense(newExpense);
       expenseCtx.removeExpense(itemData.item.id);
+      removeExpense(itemData.item.id);
     }
 
     function editExpense() {
-      // const newExpense = { ...itemData.item };
-      // newExpense.price = 99.9;
-      // expenseCtx.updateExpense(newExpense);
-      // expenseCtx.removeExpense(itemData.item.id);
       navigation.navigate("Add Expense", {
         ...itemData.item,
         date: getFormattedDate(itemData.item.date),
